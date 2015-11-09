@@ -1,9 +1,32 @@
-from flask import Flask, request
+from flask import abort, Flask, request
+from functools import wraps
 from twilio import twiml
+from twilio.util import RequestValidator
+
+import os
+
 
 app = Flask(__name__)
 
+def validate_twilio_request(f):
+    """Validates that incoming requests genuinely originated from Twilio"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        validator = RequestValidator(os.environ.get('TWILIO_AUTH_TOKEN'))
+
+        request_valid = validator.validate(
+            request.url,
+            request.form,
+            request.headers['X-TWILIO-SIGNATURE'])
+
+        if request_valid:
+            return f(*args, **kwargs)
+        else:
+            return abort(403)
+    return decorated_function
+
 @app.route('/voice', methods=['POST'])
+@validate_twilio_request
 def incoming_call():
     """Twilio Voice URL - receives incoming calls from Twilio"""
     # Create a new TwiML response
@@ -23,6 +46,7 @@ def incoming_call():
     return str(resp)
 
 @app.route('/message', methods=['POST'])
+@validate_twilio_request
 def incoming_message():
     """Twilio Messaging URL - receives incoming messages from Twilio"""
     # Create a new TwiML response

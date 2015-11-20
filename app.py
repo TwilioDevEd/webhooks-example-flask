@@ -20,7 +20,7 @@ def validate_twilio_request(f):
         request_valid = validator.validate(
             request.url,
             request.form,
-            request.headers['X-TWILIO-SIGNATURE'])
+            request.headers.get('X-TWILIO-SIGNATURE'))
 
         # Continue processing the request if it's valid, return a 403 error if
         # it's not

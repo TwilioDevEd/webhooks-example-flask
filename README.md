@@ -41,25 +41,18 @@ heroku open
 
 ### Development
 
-Getting your local environment setup to work with this app is similarly
-easy.  After you configure your app with the steps above, use this guide to
-get going locally:
+Getting your local environment setup to work with this app is ridiculously easy. 
 
-1) Install the dependencies.
+1) Run the python flask file.
 <pre>
-make init
+python app.py
 </pre>
 
-2) Launch local development webserver
-<pre>
-foreman start
-</pre>
-
-3) Open browser to [http://localhost:5000](http://localhost:5000).
+2) Open browser to [http://localhost:5000/message](http://localhost:5000/message). Should see a message that this method is not allowed, since only Twilio can make requests to this url-- [see below](#twilio).
 
 4) Tweak away on `app.py`.
 
-### Webhook with Twilio
+### Webhook with Twilio {#twilio}
 
 To learn how Twilio uses these webhooks to connect calls and messages [go here](//www.twilio.com/docs/guides/webhooks/python#flask).
 

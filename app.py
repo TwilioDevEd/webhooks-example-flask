@@ -20,7 +20,7 @@ def validate_twilio_request(f):
         request_valid = validator.validate(
             request.url,
             request.form,
-            request.headers.get('X-TWILIO-SIGNATURE'))
+            request.headers.get('X-TWILIO-SIGNATURE', ''))
 
         # Continue processing the request if it's valid, return a 403 error if
         # it's not
@@ -38,7 +38,7 @@ def incoming_call():
     resp = twiml.Response()
 
     # <Say> a message to the caller
-    from_number = request.form['From']
+    from_number = request.values['From']
     body = """
     Thanks for calling!
 
@@ -59,11 +59,11 @@ def incoming_message():
 
     # <Message> a text back to the person who texted us
     body = "Your text to me was {0} characters long. Webhooks are neat :)" \
-        .format(len(request.form['Body']))
+        .format(len(request.values['Body']))
     resp.message(body)
 
     # Return the TwiML
     return str(resp)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

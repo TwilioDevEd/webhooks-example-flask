@@ -1,12 +1,21 @@
-from flask import abort, Flask, request
 from functools import wraps
-from twilio import twiml
-from twilio.util import RequestValidator
+
+from twilio.twiml.voice_response import VoiceResponse
+from twilio.twiml.messaging_response import MessagingResponse
+from twilio.request_validator import RequestValidator
+
+from flask import (
+    Flask,
+    abort,
+    current_app,
+    request,
+)
 
 import os
 
 
 app = Flask(__name__)
+
 
 def validate_twilio_request(f):
     """Validates that incoming requests genuinely originated from Twilio"""
@@ -24,21 +33,22 @@ def validate_twilio_request(f):
 
         # Continue processing the request if it's valid, return a 403 error if
         # it's not
-        if request_valid:
+        if request_valid or current_app.debug:
             return f(*args, **kwargs)
         else:
             return abort(403)
     return decorated_function
+
 
 @app.route('/voice', methods=['POST'])
 @validate_twilio_request
 def incoming_call():
     """Twilio Voice URL - receives incoming calls from Twilio"""
     # Create a new TwiML response
-    resp = twiml.Response()
+    resp = VoiceResponse()
 
     # <Say> a message to the caller
-    from_number = request.values['From']
+    from_number = request.form['From']
     body = """
     Thanks for calling!
 
@@ -50,12 +60,13 @@ def incoming_call():
     # Return the TwiML
     return str(resp)
 
+
 @app.route('/message', methods=['POST'])
 @validate_twilio_request
 def incoming_message():
     """Twilio Messaging URL - receives incoming messages from Twilio"""
     # Create a new TwiML response
-    resp = twiml.Response()
+    resp = MessagingResponse()
 
     # <Message> a text back to the person who texted us
     body = "Your text to me was {0} characters long. Webhooks are neat :)" \
